@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
@@ -29,7 +30,7 @@ const register = async (req, res) => {
         });
 
         // eslint-disable-next-line no-underscore-dangle
-        const token = jwt.sign({ email: result.email, id: result._id }, SECRET_KEY);
+        const token = jwt.sign({ email, id: result._id, role }, SECRET_KEY);
 
         // eslint-disable-next-line object-shorthand
         res.status(201).json({ user: result, token });
@@ -55,12 +56,11 @@ const login = async (req, res) => {
             return res.status(404).json({ message: 'Invalid Credentials' });
         }
 
-        // eslint-disable-next-line no-underscore-dangle
-        const token = jwt.sign({ email: existingUser.email, id: existingUser._id }, SECRET_KEY);
-
-        // req.headers.authorization = token;
-        console.log(req.headers.authorization);
-        console.log(token);
+        const token = jwt.sign(
+            { email: existingUser.email, id: existingUser._id, role: existingUser.role },
+            // eslint-disable-next-line comma-dangle
+            SECRET_KEY
+        );
 
         res.status(200).json({ user: existingUser, token });
     } catch (error) {

@@ -23,7 +23,7 @@ app.get('/', (req, res) => {
 });
 
 mongoose
-    .connect(process.env.MONGO_LOCAL_URL)
+    .connect(process.env.MONGO_LIVE_URL)
     .then(() => {
         app.listen(PORT, () => {
             console.log(`Server started on port no. ${PORT}`);

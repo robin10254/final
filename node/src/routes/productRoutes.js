@@ -1,3 +1,4 @@
+/* eslint-disable comma-dangle */
 const express = require('express');
 
 const {

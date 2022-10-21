@@ -21,7 +21,8 @@ const addOrder = async (req, res) => {
             id,
             date,
             products,
-            userId: req.id,
+            status: 'Pending',
+            userId: req.userId,
         });
 
         await newOrder.save();
@@ -34,11 +35,13 @@ const addOrder = async (req, res) => {
 
 const getOrders = async (req, res) => {
     try {
-        const { id } = req.params;
+        const { data } = req.params;
         let orders;
 
-        if (id) {
-            orders = await orderModel.SomeValue.find({}).select({ id });
+        if (data === 'Pending' || data === 'pending') {
+            orders = await orderModel.find({ status: 'Pending' });
+        } else if (data) {
+            orders = await orderModel.find({ userId: data });
         } else {
             orders = await orderModel.find();
         }
@@ -46,7 +49,18 @@ const getOrders = async (req, res) => {
         if (!orders.length) {
             return res.status(404).json({ message: 'Orders not found' });
         }
-        res.status(200).json(orders);
+
+        if (data === 'pending' || data === 'Pending') {
+            res.status(200).json({
+                Status: 'Pending',
+                OrderCount: orders.length,
+                OrderList: orders,
+            });
+        } else if (data) {
+            res.status(200).json({ User: data, OrderCount: orders.length, OrderList: orders });
+        } else {
+            res.status(200).json(orders);
+        }
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: 'Something went wrong' });
@@ -59,18 +73,16 @@ const updateOrder = async (req, res) => {
         const order = await orderModel.findOne({ id });
 
         if (!order) {
-            return res.status(404).json({ message: 'Product not found' });
+            return res.status(404).json({ message: 'Order not found' });
         }
 
         // eslint-disable-next-line object-curly-newline
-        const { title, price, description, category, image } = req.body;
+        const { date, products } = req.body;
 
         const updatedOrder = {
-            title,
-            price,
-            category,
-            description,
-            image,
+            id,
+            date,
+            products,
         };
 
         await orderModel.findByIdAndUpdate(order._id, updatedOrder, { new: true });
@@ -87,11 +99,49 @@ const removeOrder = async (req, res) => {
         const order = await orderModel.findOne({ id });
 
         if (!order) {
-            return res.status(404).json({ message: 'Product not found' });
+            return res.status(404).json({ message: 'Order not found' });
         }
 
         await orderModel.findByIdAndRemove(order._id);
         res.status(202).json(order);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: 'Something went wrong' });
+    }
+};
+
+const reportOrder = async (req, res) => {
+    try {
+        const { date } = req.params;
+        const orders = await orderModel.find({ date });
+        if (!orders.length) {
+            return res.status(404).json({ message: 'Orders not found' });
+        }
+        res.status(200).json({ OrderCount: orders.length, OrderList: orders });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: 'Something went wrong' });
+    }
+};
+
+const changeOrderStatus = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const order = await orderModel.findOne({ id });
+
+        if (!order) {
+            return res.status(404).json({ message: 'Order not found' });
+        }
+
+        // eslint-disable-next-line object-curly-newline
+        const { status } = req.body;
+
+        const updatedOrder = {
+            status,
+        };
+
+        await orderModel.findByIdAndUpdate(order._id, updatedOrder, { new: true });
+        res.status(200).json(await orderModel.findOne({ id }));
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: 'Something went wrong' });
@@ -103,4 +153,6 @@ module.exports = {
     getOrders,
     updateOrder,
     removeOrder,
+    reportOrder,
+    changeOrderStatus,
 };

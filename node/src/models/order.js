@@ -14,8 +14,7 @@ const OrderSchema = mongoose.Schema(
             // eslint-disable-next-line prettier/prettier
             items: [{
                     productId: {
-                        type: mongoose.Schema.Types.ObjectId,
-                        ref: 'Products',
+                        type: String,
                         required: true,
                     },
                     quantity: {
@@ -24,6 +23,10 @@ const OrderSchema = mongoose.Schema(
                     },
                 },
             ],
+        },
+        status: {
+            type: String,
+            required: true,
         },
         userId: {
             type: mongoose.Schema.Types.ObjectId,
