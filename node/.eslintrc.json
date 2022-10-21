@@ -4,6 +4,7 @@
     "ecmaVersion": 12
   },
   "env": {
+    "es2020": true,
     "commonjs": true,
     "node": true
   },
