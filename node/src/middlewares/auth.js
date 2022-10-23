@@ -1,12 +1,15 @@
+/* eslint-disable no-underscore-dangle */
 /* eslint-disable consistent-return */
 const dotenv = require('dotenv');
 const jwt = require('jsonwebtoken');
+
+const userModel = require('../models/user');
 
 dotenv.config();
 
 const { SECRET_KEY } = process.env;
 
-const auth = (req, res, next) => {
+const authfunc = (permissions) => async (req, res, next) => {
     try {
         let token = req.headers.authorization;
 
@@ -17,18 +20,20 @@ const auth = (req, res, next) => {
             const user = jwt.verify(token, SECRET_KEY);
             req.userId = user.id;
 
-            console.log(user.role);
+            const existingUser = await userModel.findOne({ _id: user.id });
 
-            next();
+            if (permissions.includes(existingUser.role)) {
+                next();
+            } else {
+                return res.status(401).json({ message: 'Unauthorized User' });
+            }
         } else {
             return res.status(401).json({ message: 'Unauthorized User' });
         }
     } catch (error) {
         console.log(error);
-        res.status(401).json({ message: 'Unauthorized User' });
+        return res.status(401).json({ message: 'Unauthorized User' });
     }
 };
 
-module.exports = {
-    auth,
-};
+module.exports = { authfunc };

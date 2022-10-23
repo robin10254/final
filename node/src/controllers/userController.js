@@ -22,7 +22,7 @@ const register = async (req, res) => {
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        const result = await userModel.create({
+        const user = await userModel.create({
             username,
             email,
             password: hashedPassword,
@@ -30,10 +30,9 @@ const register = async (req, res) => {
         });
 
         // eslint-disable-next-line no-underscore-dangle
-        const token = jwt.sign({ email, id: result._id, role }, SECRET_KEY);
+        const token = jwt.sign({ email, id: user._id }, SECRET_KEY);
 
-        // eslint-disable-next-line object-shorthand
-        res.status(201).json({ user: result, token });
+        res.status(201).json({ user, token });
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: 'Something went wrong' });
@@ -46,6 +45,7 @@ const login = async (req, res) => {
 
     try {
         const existingUser = await userModel.findOne({ email });
+        // console.log(existingUser.role);
 
         if (!existingUser) {
             return res.status(404).json({ message: 'User not found' });
@@ -57,7 +57,7 @@ const login = async (req, res) => {
         }
 
         const token = jwt.sign(
-            { email: existingUser.email, id: existingUser._id, role: existingUser.role },
+            { email: existingUser.email, id: existingUser._id },
             // eslint-disable-next-line comma-dangle
             SECRET_KEY
         );

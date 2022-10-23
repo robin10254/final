@@ -67,6 +67,25 @@ const getOrders = async (req, res) => {
     }
 };
 
+const getPendingOrders = async (req, res) => {
+    try {
+        const orders = await orderModel.find({ status: 'Pending' });
+
+        if (!orders.length) {
+            return res.status(404).json({ message: 'Orders not found' });
+        }
+
+        return res.status(200).json({
+            Status: 'Pending',
+            OrderCount: orders.length,
+            OrderList: orders,
+        });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ message: 'Something went wrong' });
+    }
+};
+
 const updateOrder = async (req, res) => {
     try {
         const { id } = req.params;
@@ -155,4 +174,5 @@ module.exports = {
     removeOrder,
     reportOrder,
     changeOrderStatus,
+    getPendingOrders,
 };

@@ -11,11 +11,15 @@ const auth = require('../middlewares/auth');
 
 const productRouter = express.Router();
 
-productRouter.post('/add/:id', auth, addProduct); // add product by id
-productRouter.post('/add', auth, addProduct); // add product from input
-productRouter.get('/', auth, getProducts); // get products
-productRouter.get('/:id', auth, getProducts); // get product by product ID
-productRouter.patch('/update/:id', auth, updateProduct);
-productRouter.delete('/remove/:id', auth, removeProduct);
+try {
+    productRouter.post('/add/:id', auth.authfunc(['superadmin']), addProduct); // add product from fakeAPI
+    productRouter.post('/add', auth.authfunc(['superadmin']), addProduct); // add product from req
+    productRouter.get('/:id', auth.authfunc(['superadmin']), getProducts); // get product by product ID
+    productRouter.get('/', auth.authfunc(['superadmin', 'admin', 'user']), getProducts); // get products
+    productRouter.patch('/update/:id', auth.authfunc(['superadmin']), updateProduct);
+    productRouter.delete('/remove/:id', auth.authfunc(['superadmin']), removeProduct);
+} catch (error) {
+    console.log(error);
+}
 
 module.exports = productRouter;
